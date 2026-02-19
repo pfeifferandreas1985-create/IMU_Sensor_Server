@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Sim2Real Calibration
+Exec=/home/ubuntu/Schreibtisch/IMU_Sensor_Server/host_app/run_calibration.sh
+Icon=/home/ubuntu/Schreibtisch/IMU_Sensor_Server/host_app/calibration_icon.svg
+Type=Application
+Terminal=false
+Categories=Development;Engineering;
+Comment=Calibrate IMU for Sim2Real

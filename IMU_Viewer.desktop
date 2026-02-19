@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=IMU Sensor Viewer
+Comment=Live 3D Orientation for Hexapod RL
+Exec=/home/ubuntu/Schreibtisch/IMU_Sensor_Server/host_app/run_viewer.sh
+Icon=/home/ubuntu/Schreibtisch/IMU_Sensor_Server/host_app/imu_icon.png
+Path=/home/ubuntu/Schreibtisch/IMU_Sensor_Server/host_app
+Terminal=true
+StartupNotify=false
+Categories=Development;Engineering;

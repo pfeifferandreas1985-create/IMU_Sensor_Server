@@ -1,0 +1,25 @@
+
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>DATENBLAETTER.md</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 40px; color: #333; max-width: 900px; margin: auto; background: #f9f9f9; }
+            .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            h1 { color: #0078d4; border-bottom: 2px solid #0078d4; padding-bottom: 10px; }
+            h2 { color: #005a9e; margin-top: 30px; border-left: 5px solid #0078d4; padding-left: 15px; }
+            pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            th { background-color: #0078d4; color: white; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>📄 Datenblätter & Sensor-Spezifikationen (Engineering Reference)</h1><p></p><h2>1. MPU-6050 (InvenSense / TDK)</h2>*   **Kernfunktion:** 6-Achs Motion-Tracking (Gyroscope + Accelerometer).<br>*   **Spannungsbereich:** 2.375V – 3.46V (Nennspannung 3.3V).<br>*   **Kommunikation:** I2C (bis 400 kHz), AD0 Pin für Adresswahl.<br>*   **Auflösung:** 16-bit ADC pro Achse.<br>*   **Messbereiche (Konfigurierbar):**<br>*   Gyro: ±250, ±500, ±1000, ±2000 °/s (genutzt: ±1000°/s).<br>*   Accel: ±2, ±4, ±8, ±16 g (genutzt: ±4g).<br>*   **Features:** Digital Low Pass Filter (DLPF), 1024 Byte FIFO, interner Temperatursensor zur Drift-Kompensation.<br><p></p><h2>2. GY-271 / HMC5883L / QMC5883L (Magnetometer)</h2>*   **Funktion:** Digitaler Kompass zur absoluten Yaw-Bestimmung.<br>*   **Spannung:** 3.0V – 5.0V (Level-Shifter oft integriert, hier 3.3V genutzt).<br>*   **Sampling-Rate:** Bis zu 75 Hz (genutzt: 50 Hz).<br>*   **Genauigkeit:** 1° bis 2° Kompass-Präzision nach Hard-Iron Kalibrierung.<br>*   **Wichtig:** Der HMC5883L und QMC5883L sind Pin-kompatibel, nutzen aber unterschiedliche I2C-Adressen (`0x1E` vs. `0x0D`). Die Firmware muss beide prüfen.<br><p></p><h2>3. BMP280 (Bosch Sensortec)</h2>*   **Funktion:** Absoluter Luftdruck & Temperatur.<br>*   **Präzision:** ±0.12 hPa (entspricht ±1m Höhenauflösung).<br>*   **Stromaufnahme:** 2.7 µA bei 1 Hz Sampling (extrem effizient).<br>*   **I2C Adressen:** `0x76` (Standard) oder `0x77` (SDO auf High).<br>*   **Filterung:** Interner IIR-Filter zur Unterdrückung von kurzzeitigen Druckschwankungen (z.B. durch Hexapod-Schritt-Vibrationen).<br><p></p><h2>4. AHT20 (ASAIR)</h2>*   **Funktion:** Digitaler Temperatur- & Luftfeuchtesensor.<br>*   **Messbereich Temp:** -40°C bis +85°C (Genauigkeit ±0.3°C).<br>*   **Messbereich Hum:** 0% bis 100% RH (Genauigkeit ±2%).<br>*   **Ansprechzeit:** < 5 Sekunden.<br>*   **Besonderheit:** Komplett kalibrierter I2C-Ausgang, ersetzt den fehleranfälligen DHT11/22.<br><p></p><h2>5. ESP32-WROOM-32 (Espressif)</h2>*   **CPU:** Xtensa® Dual-Core 32-bit LX6 (bis 240 MHz).<br>*   **Arbeitsspeicher:** 520 KB SRAM.<br>*   **Logikpegel:** 3.3V (WICHTIG: Pins sind nicht 5V tolerant!).<br>*   **Peripherie:** 2x I2C Hardware-Module, 12-bit ADC, integriertes WiFi & Bluetooth.<br>
+        </div>
+    </body>
+    </html>
+    

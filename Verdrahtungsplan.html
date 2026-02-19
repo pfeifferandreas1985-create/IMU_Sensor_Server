@@ -1,0 +1,54 @@
+
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>VERDRAHTUNGSPLAN.md</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 40px; color: #333; max-width: 900px; margin: auto; background: #f9f9f9; }
+            .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            h1 { color: #0078d4; border-bottom: 2px solid #0078d4; padding-bottom: 10px; }
+            h2 { color: #005a9e; margin-top: 30px; border-left: 5px solid #0078d4; padding-left: 15px; }
+            pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            th { background-color: #0078d4; color: white; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>⚡ Ultimativer Verdrahtungsplan V2.3 – Full-MCU Sensor Stack</h1><p></p>**Projekt:** Hexapod RL – Sim2Real Sensor-Hub<br>**Fokus:** Maximale Signalintegrität & EMV-Resistenz<br>**Hardware:** ESP32 Dual-Core + MPU6050, GY-271, BMP280, AHT20<br><p></p>---<br><p></p><h2>1. Spannungsversorgung (Power Architecture)</h2><p></p>Wir nutzen das 5V-System des Hexapods. Die Verteilung erfolgt sternförmig vom ESP32 aus, um Rauschkopplung zu minimieren.<br><p></p><table><tr><td>Komponente</td><td>Pin (ESP32)</td><td>Signal</td><td>Spannung</td><td>Notiz</td></tr><tr><td>**Haupteingang**</td><td>**Vin / 5V**</td><td>External Power</td><td>5V DC</td><td>Vom BEC / Regler</td></tr><tr><td>**Masse (Main)**</td><td>**GND**</td><td>System Ground</td><td>0V</td><td>Sternpunkt für alle Sensoren</td></tr><tr><td>**Sensor Power**</td><td>**3.3V**</td><td>VCC Bus</td><td>3.3V DC</td><td>Geregelter Ausgang des ESP32</td></tr><p></p></table>---<br><p></p><h2>2. I²C-Bus Spezifikation (400 kHz Fast Mode)</h2><p></p>Alle vier Sensoren liegen parallel am Bus. Die Einhaltung der Pull-up Spezifikation ist kritisch für 500 Hz Sampling.<br><p></p><h3>🔌 Bus-Mapping</h3><table><tr><td>Signal</td><td>ESP32 Pin</td><td>Sensor Pins</td><td>Widerstand (Pull-up)</td><td>Kabelfarbe</td></tr><tr><td>**SDA**</td><td>**GPIO 21**</td><td>Alle SDA Pins</td><td>**4.7 kΩ** gegen 3.3V</td><td>**Grün**</td></tr><tr><td>**SCL**</td><td>**GPIO 22**</td><td>Alle SCL Pins</td><td>**4.7 kΩ** gegen 3.3V</td><td>**Gelb**</td></tr><tr><td>**INT**</td><td>**GPIO 4**</td><td>MPU6050 INT</td><td>–</td><td>Blau</td></tr><p></p></table>---<br><p></p><h2>3. Sensor-Detailkonfiguration & Adressierung</h2><p></p><table><tr><td>Sensor</td><td>Chip</td><td>I²C Adresse</td><td>Besonderheit</td><td>Montage</td></tr><tr><td>**MPU6050**</td><td>IMU</td><td>**0x68**</td><td>AD0 auf GND legen</td><td>Center of Mass (CoM)</td></tr><tr><td>**GY-271**</td><td>Mag</td><td>**0x1E / 0x0D**</td><td>HMC5883L/QMC5883L</td><td>Weit weg von Motoren</td></tr><tr><td>**BMP280**</td><td>Baro</td><td>**0x76 / 0x77**</td><td>SDO auf GND/3.3V</td><td>Vor Wind geschützt</td></tr><tr><td>**AHT20**</td><td>Klima</td><td>**0x38**</td><td>Fest codiert</td><td>Frei liegend</td></tr><p></p></table>---<br><p></p><h2>4. Verdrahtungs-Schema (Vollständig)</h2><p></p><pre><code>+---------------------------------------+
+|             ESP32 (30/38 Pin)         |
++---------------------------------------+
+|       |       |       |       |
+[Vin]   [GND]  [3.3V]  [G21]   [G22]   [G4]
+|       |       |       |       |      |
+5V (BEC) --------+       |       |       |       |      |
+|       |       |       |      |
+GND (BEC) ---------------+-------+       |       |      |
+|       |       |      |
++-------|-------|------|-----> [3.3V Rail]
+|       |       |      |
+|    [4.7k]  [4.7k]    |      (Pull-ups an 3.3V)
+|       |       |      |
++-------+-------+      |
+|       |      |
++------------------------------+-------+------|------------------+
+|               I2C BUS (SDA / SCL)           |                  |
+|                                             |                  |
++------------+          +------------+        +------------+     +------------+
+|  MPU6050   |          |   GY-271   |        |   BMP280   |     |   AHT20    |
++------------+          +------------+        +------------+     +------------+
+| VCC: 3.3V  |          | VCC: 3.3V  |        | VCC: 3.3V  |     | VCC: 3.3V  |
+| GND: GND   |          | GND: GND   |        | GND: GND   |     | GND: GND   |
+| SDA: G21   |          | SDA: G21   |        | SDA: G21   |     | SDA: G21   |
+| SCL: G22   |          | SCL: G22   |        | SCL: G22   |     | SCL: G22   |
+| INT: G4    |          |            |        |            |     |            |
+| AD0: GND   |          |            |        |            |     |            |
++------------+          +------------+        +------------+     +------------+
+</code></pre><p></p>---<br><p></p><h2>5. Engineering Best-Practices (Nichts auslassen!)</h2><p></p><h3>5.1 Signal-Integrität</h3>*   **Widerstände:** Die 4.7 kΩ Pull-ups müssen so nah wie möglich am ESP32 sitzen.<br>*   **Leitungsführung:** SDA und SCL sollten **nie** parallel zu Motorstromkabeln laufen. Falls nötig: Verdrille SDA mit einem GND-Draht (Twisted Pair).<br>*   **Kabellänge:** Absolute Grenze 15-20 cm. Darüber hinaus bricht die Flankensteilheit bei 400 kHz ein.<br><p></p><h3>5.2 Filterung & Entstörung</h3>*   **Stützkondensatoren:** Platziere einen **100 nF Keramik-Kondensator** (Code 104) so nah wie möglich an den VCC/GND Pins *jedes* Sensors.<br>*   **Bulk-Cap:** Ein **10 µF Elektrolyt-Kondensator** an der 5V-Eingangsseite des ESP32 puffert Stromspitzen beim WLAN-Sendeversuch.<br><p></p><h3>5.3 Mechanische Montage</h3>*   **Vibrations-Dämpfung:** Die MPU6050 sollte auf einem kleinen Pad aus weichem Neopren oder 3D-gedrucktem TPU gelagert werden, um Motor-Vibrationen (High-Frequency Noise) mechanisch zu filtern.<br>*   **Barometer-Schutz:** Klebe ein kleines Stück offenporigen Schaumstoff über das BMP280 Gehäuse. Das verhindert "Höhensprünge" durch Luftturbulenzen beim schnellen Laufen des Hexapods.<br><p></p><h3>5.4 Adress-Check (Pre-Flight)</h3>Bevor du den Code startest, führe einen I2C-Scanner Sketch aus. Du **musst** folgende Adressen sehen:<br>1. `0x68` (MPU)<br>2. `0x1E` oder `0x0D` (Mag)<br>3. `0x76` oder `0x77` (Baro)<br>4. `0x38` (AHT)<br><p></p>---<br><p></p>**Status:** Dieser Plan ist final und deckt alle elektrischen und mechanischen Aspekte für einen stabilen 500 Hz Betrieb ab.<br>
+        </div>
+    </body>
+    </html>
+    

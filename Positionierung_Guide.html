@@ -1,0 +1,37 @@
+
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>POSITIONIERUNG_GUIDE.md</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 40px; color: #333; max-width: 900px; margin: auto; background: #f9f9f9; }
+            .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            h1 { color: #0078d4; border-bottom: 2px solid #0078d4; padding-bottom: 10px; }
+            h2 { color: #005a9e; margin-top: 30px; border-left: 5px solid #0078d4; padding-left: 15px; }
+            pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            th { background-color: #0078d4; color: white; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>📐 Mechanisches Layout & Positionierung (CoM-Strategie)</h1><p></p>Für ein stabiles RL-Training in NVIDIA Isaac Sim ist die physikalische Übereinstimmung von Hardware und Simulation entscheidend. Hier ist die strategische Anordnung der Module im Gehäuse nach **First Principles**:<br><p></p>---<br><p></p><h2>1. Das kritische Zentrum: Die MPU6050 (IMU)</h2>Die **MPU6050 MUSS zwingend so nah wie möglich an den Masseschwerpunkt (Center of Mass, CoM)** des Hexapods.<br><p></p><h3>Warum?</h3>*   **Beschleunigung (Acc):** Wenn die IMU außerhalb des CoM sitzt, misst sie bei jeder Drehung des Roboters zusätzliche Zentripetalbeschleunigungen. In der Simulation wird die Beschleunigung meist direkt im CoM berechnet. Jede Abweichung führt zu "Phantom-Kräften" im RL-State.<br>*   **Rotation (Gyro):** Die Winkelgeschwindigkeit ist zwar überall am starren Körper gleich, aber die Integration zu Quaternionen ist im Drehzentrum am stabilsten gegen Vibrationen.<br>*   **Achsen-Ausrichtung:** Die X-Achse des Moduls muss exakt parallel zur Vorwärts-Laufrichtung des Hexapods ausgerichtet sein.<br><p></p>---<br><p></p><h2>2. Magnetometer (GY-271): Die "EMV-Distanz"</h2>Das Magnetometer sollte **NICHT** in den Masseschwerpunkt, wenn dort Stromkabel oder Motoren sind.<br><p></p><h3>Strategie:</h3>*   **Distanz:** Platziere es so weit wie möglich weg von:<br>1.  Den Servomotoren (Permanentmagnete & Spulen).<br>2.  Den 5V/Batterie-Stromkabeln (Magnetfelder bei Lastspitzen).<br>*   **Position:** Oft ist eine erhöhte Position (ein kleiner "Turm") oder ein Ausleger am hinteren/vorderen Ende des Chassis ideal.<br>*   **Wichtig:** Die Ausrichtung muss parallel zur IMU sein, damit die Fusion im Madgwick-Filter mathematisch korrekt bleibt.<br><p></p>---<br><p></p><h2>3. Barometer (BMP280): Die "Beruhigungszone"</h2>Der BMP280 misst Luftdruck zur Höhenbestimmung. Er reagiert extrem empfindlich auf Luftströmungen.<br><p></p><h3>Strategie:</h3>*   **Schutz:** Platziere ihn in einer Zone mit "ruhender Luft".<br>*   **Engineering-Trick:** Klebe ein Stück offenporigen Schaumstoff direkt über den Sensor. Das lässt den statischen Druck durch, filtert aber dynamische Windstöße (die beim Laufen entstehen) weg.<br>*   **Position:** Unkritisch in Bezug auf den CoM, solange er im Gehäuse geschützt ist.<br><p></p>---<br><p></p><h2>4. ESP32 & AHT20: Hitze-Management</h2>*   **ESP32:** Kann bei aktivem WLAN warm werden. Platziere ihn so, dass seine Abwärme nicht direkt den AHT20 oder die MPU6050 (Temperaturdrift!) aufheizt.<br>*   **AHT20:** Sollte am Rand des Gehäuses oder an einer Belüftungsöffnung sitzen, um die echte Umgebungstemperatur/Feuchtigkeit zu messen, nicht die "Gehäuse-Innentemperatur".<br><p></p>---<br><p></p><h2>5. Zusammenfassung des Layouts (Draufsicht)</h2><p></p><pre><code>Vorn (Laufrichtung)
++-----------------------+
+|       [AHT20]         |  <-- Außen (Klima)
+|                       |
+|     [ BMP280 ]        |  <-- Geschützt (Schaumstoff)
+|                       |
+|      [MPU6050]        |  <-- EXAKT IM CoM / MITTE
+|                       |
+|       [ESP32]         |  <-- Leicht versetzt
+|                       |
+|      [GY-271]         |  <-- Hinten/Oben (Magnet-Distanz)
++-----------------------+
+</code></pre><p></p><h3>🛑 Profi-Tipp für Sim2Real:</h3>Wenn du die IMU nicht exakt in den CoM bekommst, musst du den **Offset (X, Y, Z Distanz)** in deinem RL-Code in Isaac Sim hinterlegen (das sogenannte IMU-to-Body-Transform). Es ist aber 100x einfacher, sie mechanisch korrekt zu platzieren!<br>
+        </div>
+    </body>
+    </html>
+    
