@@ -85,8 +85,8 @@ void setup() {
     if(mag.begin()) Serial.println("Mag OK"); 
     else Serial.println("Mag FAIL");
 
-    filter.begin(500.0f);
-    filter.setBeta(1.0f); // High Gain restored
+    filter.begin(250.0f); // Korrekte Abtastrate (Timer = 250Hz)
+    filter.setBeta(1.0f); // Reaktiv ohne Zittern
 
     timer = timerBegin(1000000);
     timerAttachInterrupt(timer, &onTimer);

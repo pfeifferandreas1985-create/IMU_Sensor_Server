@@ -116,7 +116,14 @@ def update(frame):
     
     if current_data_unpacked:
         update.last_packet_ts = time.time()
-        status_text.set_text(last_status_str)
+        # Umgebungsdaten aus Paket lesen
+        pressure = current_data_unpacked[20]  # Pascal
+        temp     = current_data_unpacked[21]  # °C
+        humidity = current_data_unpacked[22]  # %
+        # Barometrische Höhenformel (Standardatmosphäre, Meeresspiegel=101325 Pa)
+        altitude = 44330.0 * (1.0 - (pressure / 101325.0) ** (1.0 / 5.255)) if pressure > 0 else 0.0
+        env_str = f" | {temp:.1f}°C | {humidity:.1f}% | Höhe: {altitude:.1f}m"
+        status_text.set_text(last_status_str + env_str)
         status_text.set_color('black')
         status_text.set_backgroundcolor('white')
     elif time.time() - update.last_packet_ts > 0.5:
